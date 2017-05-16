@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+import sys
 import unittest
-from mock import patch, Mock
+if (sys.version_info > (3, 0)): # Python 3
+    from unittest.mock import patch, Mock
+else: # Python 2
+    from mock import patch, Mock
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server.async import ModbusTcpProtocol, ModbusUdpProtocol
 from pymodbus.server.async import ModbusServerFactory
@@ -74,8 +78,14 @@ class AsynchronousServerTest(unittest.TestCase):
     def testTcpServerStartup(self):
         ''' Test that the modbus tcp async server starts correctly '''
         with patch('twisted.internet.reactor') as mock_reactor:
-            StartTcpServer(context=None, console=True)
-            self.assertEqual(mock_reactor.listenTCP.call_count, 2)
+            if (sys.version_info > (3, 0)):
+                console = False
+                call_count = 1
+            else:
+                console = True
+                call_count = 2
+            StartTcpServer(context=None, console=console)
+            self.assertEqual(mock_reactor.listenTCP.call_count, call_count)
             self.assertEqual(mock_reactor.run.call_count, 1)
 
     def testUdpServerStartup(self):
